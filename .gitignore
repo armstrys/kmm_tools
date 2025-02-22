@@ -10,3 +10,4 @@ wheels/
 .venv
 .env
 uv.lock
+kmm_tools/test.ipynb
