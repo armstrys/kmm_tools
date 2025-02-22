@@ -142,8 +142,6 @@ sim_headers = {
     6: "Finals",
 }
 
-if len(tournament.games) == 63 and current_r == 0:
-    current_r = 1
 
 t1, t2, t3, t4, t5, t6, ts = st.tabs(
     list(sim_headers.values())[:5] + ["Final Four and Championship", "Summary"]
@@ -159,6 +157,9 @@ round_tabs = {
 }
 
 
+if len(tournament.games) == 63 and current_r == 0:
+    current_r = 1
+    t1.markdown("#### No Games - Proceed to next round.")
 # Run simulation
 while current_r < 7:
     t = round_tabs[current_r]
