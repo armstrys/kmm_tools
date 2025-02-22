@@ -101,6 +101,7 @@ except KeyError:
 
 
 with st.sidebar:
+    st.divider()
     use_historic_results = False
     if len(historic_results) > 0:
         use_historic_results = st.checkbox("Apply historic results", value=False)
