@@ -6,6 +6,7 @@ for a local installation
 
 # Data manipulation
 import os
+from functools import partial
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -62,16 +63,8 @@ If you want to run this locally you can see the
 [Github page](https://github.com/armstrys/kmm_tools) for more info.
 """
 
-st.sidebar.write("""
-                 If you would like to self-host this app find it on github
-                 [here](https://github.com/armstrys/NCAA_BracketBuilder).
-                 """)
-
 # Collect data
 sub_file = st.sidebar.file_uploader(label="Drag your Kaggle solution file here")
-mw = (st.sidebar.radio(label="Men's or Women's submission?", options=["Men", "Women"]))[
-    0
-][0]
 
 # Prep data   ----- YOU DONT NEED TO CHANGE THIS
 try:
@@ -92,43 +85,12 @@ except KeyError:
 # Collect simulation info
 seasons = submission["ID"].map(lambda x: int(x.split("_")[0])).unique().tolist()
 season = int(st.sidebar.selectbox(label="Season", options=np.sort(seasons)[::-1]))
+mw = (
+    st.sidebar.segmented_control(
+        label="Men's or Women's bracket?", options=["Men", "Women"], default="Men"
+    )
+)[0][0]
 
-SEASON_INFO = pd.read_csv(DEFAULT_COMPETITION_DATA_PATH / (f"{mw}Seasons.csv")).query(
-    "Season == @season"
-)
-REGION_DICT = {
-    "W": "W " + SEASON_INFO["RegionW"].values[0],
-    "X": "X " + SEASON_INFO["RegionX"].values[0],
-    "Y": "Y " + SEASON_INFO["RegionY"].values[0],
-    "Z": "Z " + SEASON_INFO["RegionZ"].values[0],
-}
-
-style = st.sidebar.radio(
-    "Stochastic or Deterministic Bracket?", ["Chalk", "Random"]
-).lower()
-seed = st.sidebar.number_input(
-    label="Seed for stochastic bracket:", value=0, min_value=0
-)
-np.random.seed(seed)
-
-st.sidebar.write("""
-                 **Chalk bracket**: will always select the team favored by the
-                 model.\n
-                 **Random bracket**: will randomize the winner for each game
-                 using the model probabilities. Please choose a new seed to
-                 change the randomization!
-                 """)
-
-# Initialize simulation
-sim_headers = {
-    0: "First Four",
-    1: "Round of 64",
-    2: "Round of 32",
-    3: "Sweet 16",
-    4: "Elite 8",
-    5: "Final Four",
-    6: "Finals",
-}
 
 current_r = 0
 tournament = start_tournament(
@@ -142,9 +104,51 @@ try:
 except KeyError:
     historic_results = {}
 
-use_historic_results = False
-if len(historic_results) > 0:
-    use_historic_results = st.sidebar.checkbox("Use historic results", value=True)
+
+with st.sidebar:
+    with st.form("test"):
+        use_historic_results = False
+        if len(historic_results) > 0:
+            use_historic_results = st.checkbox("Apply historic results", value=False)
+
+        style = st.radio(
+            "Stochastic or Deterministic Bracket?", ["Chalk", "Random"]
+        ).lower()
+        seed = st.number_input(
+            label="Seed for stochastic bracket:", value=0, min_value=0
+        )
+        np.random.seed(seed)
+
+        st.write("""
+                        **Chalk bracket**: will always select the team favored by the
+                        model.\n
+                        **Random bracket**: will randomize the winner for each game
+                        using the model probabilities. Please choose a new seed to
+                        change the randomization!
+                        """)
+
+        st.form_submit_button("Apply settings")
+
+
+SEASON_INFO = pd.read_csv(DEFAULT_COMPETITION_DATA_PATH / (f"{mw}Seasons.csv")).query(
+    "Season == @season"
+)
+REGION_DICT = {
+    "W": "W " + SEASON_INFO["RegionW"].values[0],
+    "X": "X " + SEASON_INFO["RegionX"].values[0],
+    "Y": "Y " + SEASON_INFO["RegionY"].values[0],
+    "Z": "Z " + SEASON_INFO["RegionZ"].values[0],
+}
+# Initialize simulation
+sim_headers = {
+    0: "First Four",
+    1: "Round of 64",
+    2: "Round of 32",
+    3: "Sweet 16",
+    4: "Elite 8",
+    5: "Final Four",
+    6: "Finals",
+}
 
 if len(tournament.games) == 63 and current_r == 0:
     current_r = 1
@@ -161,6 +165,8 @@ round_tabs = {
     5: t6,
     6: t6,
 }
+
+
 # Run simulation
 while current_r < 7:
     t = round_tabs[current_r]
