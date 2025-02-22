@@ -1,3 +1,20 @@
+# import pandas as pd
+# from march_madness_submission_tester import _get_historical_results
+# from march_madness_simulator import start_tournament, simulate_tournament
+
+# results = {"M":{},"W":{}}
+# for s in range(2021, 2025):
+#     sub = _get_historical_results([s])
+#     if s == 2021:
+#         sub.update({'2021_1332_1433': True}) # only ever cancellation - Oregon v VCU
+#     data = list(sub.items())
+#     sub = pd.DataFrame(data=data, columns=['ID', 'Pred'])
+#     sub["Pred"] = sub["Pred"].astype(float)
+#     for mw in 'MW':
+#         t = start_tournament(submission=sub, season=s, mw=mw)
+#         simulate_tournament(tournament=t, style='chalk')
+#         results[mw].update({s: {k: v.id for k, v in t.results.items()}})
+
 {
     "M": {
         2021: {
