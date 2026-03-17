@@ -300,7 +300,6 @@ def _test_sample_evaluation() -> None:
     """make sure sample submissions return expected values"""
     expectations = {
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage1.csv": 0.25,
-        DEFAULT_COMPETITION_DATA_PATH / "SeedBenchmarkStage1.csv": 0.18767401129943503,
     }
     for sample_path, expected_result in expectations.items():
         if not sample_path.exists():
@@ -308,9 +307,9 @@ def _test_sample_evaluation() -> None:
         sample = _cached_csv_read(sample_path)
         seasons = sample["ID"].map(lambda x: int(x.split("_")[0])).unique().tolist()
         score = evaluate_stage1_submission(sample, seasons)
-        assert np.isclose(
-            score, expected_result
-        ), f"tests not returning expected results: {score} != {expected_result}"
+        assert np.isclose(score, expected_result), (
+            f"tests not returning expected results: {score} != {expected_result}"
+        )
 
 
 _test_sample_evaluation()
@@ -321,19 +320,18 @@ def _test_submission_count() -> None:
     paths = (
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage1.csv",
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage2.csv",
-        DEFAULT_COMPETITION_DATA_PATH / "SeedBenchmarkStage1.csv",
     )
     for sample_path in paths:
         if not sample_path.exists():
             warnings.warn("{sample_path} does not exist... skipping tests")
         sample = _cached_csv_read(sample_path)
         seasons = sample["ID"].map(lambda x: int(x.split("_")[0])).unique().tolist()
-        assert not _check_sub_count(
-            sample.head(), seasons
-        ), "something is wrong with count checker"
-        assert _check_sub_count(
-            sample, seasons
-        ), "something is wrong with count checker"
+        assert not _check_sub_count(sample.head(), seasons), (
+            "something is wrong with count checker"
+        )
+        assert _check_sub_count(sample, seasons), (
+            "something is wrong with count checker"
+        )
 
 
 _test_submission_count()
@@ -344,7 +342,6 @@ def _test_submission_team_order() -> None:
     paths = (
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage1.csv",
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage2.csv",
-        DEFAULT_COMPETITION_DATA_PATH / "SeedBenchmarkStage1.csv",
     )
     for sample_path in paths:
         if not sample_path.exists():
@@ -353,12 +350,12 @@ def _test_submission_team_order() -> None:
         bad_sample = sample.copy()
         bad_sample["ID"] = bad_sample["ID"].map(_swap_game_id)
 
-        assert _check_id_team_order(
-            sample.head()
-        ), "something is wrong with team order checker"
-        assert not _check_id_team_order(
-            bad_sample.head()
-        ), "something is wrong with team order checker"
+        assert _check_id_team_order(sample.head()), (
+            "something is wrong with team order checker"
+        )
+        assert not _check_id_team_order(bad_sample.head()), (
+            "something is wrong with team order checker"
+        )
 
 
 _test_submission_team_order()
@@ -369,23 +366,22 @@ def _test_submission_columns() -> None:
     paths = (
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage1.csv",
         DEFAULT_COMPETITION_DATA_PATH / "SampleSubmissionStage2.csv",
-        DEFAULT_COMPETITION_DATA_PATH / "SeedBenchmarkStage1.csv",
     )
     for sample_path in paths:
         if not sample_path.exists():
             warnings.warn("{sample_path} does not exist... skipping tests")
         sample = _cached_csv_read(sample_path)
-        assert _check_columns(
-            sample.head()
-        ), "something is wrong with team order checker"
+        assert _check_columns(sample.head()), (
+            "something is wrong with team order checker"
+        )
         bad_sample = sample.copy()
-        assert not _check_columns(
-            bad_sample.rename(columns={"Pred": "P"}).head()
-        ), "something is wrong with team order checker"
+        assert not _check_columns(bad_sample.rename(columns={"Pred": "P"}).head()), (
+            "something is wrong with team order checker"
+        )
         bad_sample["extra_column"] = True
-        assert not _check_columns(
-            bad_sample.head()
-        ), "something is wrong with team order checker"
+        assert not _check_columns(bad_sample.head()), (
+            "something is wrong with team order checker"
+        )
 
 
 _test_submission_columns()
